@@ -1,0 +1,6 @@
+[submodule "control/2fa/GoogleAuthenticator"]
+	path = control/2fa/GoogleAuthenticator
+	url = git://github.com/PHPGangsta/GoogleAuthenticator.git
+[submodule "control/2fa/PHPMailer"]
+	path = control/2fa/PHPMailer
+	url = git://github.com/Synchro/PHPMailer.git
