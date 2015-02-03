@@ -111,3 +111,5 @@ copy and paste the following:
 
 # @daily bash /home/cccron/cron/backup/walletbackup.sh  /// missing script
 ```
+
+See API_CALLS for specific API calls and parameters
