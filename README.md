@@ -1,65 +1,90 @@
-api
+CheckoutCrypto API
+==================
+
+The source code for the public + private API allows the site, merchants, developers, to connect to the worker backend.  This is the middleman between the backend management(worker), and the public(site, developers, etc).
+ 
+
+Prerequisites
+=============
+You must have the CheckoutCrypto drupal site database installed. Which means you must install drupal with these modules: https://github.com/CheckoutCrypto/site enabled and installed.
+
+required:  ccAccount, ccAdmin, ccBalance ccCoins, ccGroups, ccOTP, ccService, ccWallets, ccTransactions, ccWorker, cgTrading,
+
+
+API
 ===
+1) Fill in Worker API key, port, and site hot wallet(drupal account), in ./config/ccapiconfig.php (create API key, within worker menu). Note: Worker key is generated within the worker itself, run the worker without the -server option, hit option 3 (scroll debug output).
 
-```
-mkdir /var/www/api 
-copy contents of repo to new directory
-cd /var/www/api && git submodule init && git submodule update
-```
+2) Fill in site coins, validation codes, txfees, min/max, in ccdev_coins database table. Add each coin to worker's cache. To do this run worker without -server option, hit option 2, follow instructions(hitting enter after each input).
 
-in ./config/ccapiconfig.php
-Fill in Worker:
-<ol><li> API key(create API key, within worker menu). </li>
-<li>port </li>
-<li>site hot wallet(drupal account), </li></ol>
+3) Fill in api database login in ./config/dbconfig.php
 
-in ./config/CoinsAndActions.php 
-Fill in site:
-<ul><li>coins, </li>
-<li>validation codes, </li>
-<li>txfees, </li>
-<li>min/max, </li></ul>
+4) Add your SMTP info, for all email validations, to ./control/actions/ccEmail.php ln 59 and 62.  This is necessary to validate any user who has an email OTP preference.
 
-<ol><li>Add each coin's RPC login within the worker menu.</li>
-<li>Fill in api database login in ./config/dbconfig.php</li>
-<li>Fill in rates database config in ./control/cron/rates/ratesconfig.php</li>
-<li>Add your SMTP info for all email validations to ./control/actions/ccEmail.php ln 59 and 62</li></ol>
+Coins + Rates
+======
+
+coin_name = coin literal string name
+
+coin_code = coin acronym
+
+coin_rate   = rate in USD
+
+coin_rate_btc = rate in BTC
+
+coin_rate_sell = rate at which host will sell in BTC
+
+coin_rate_buy= rate at which host wil buy in BTC
+
+Market_buy_depth = The depth of the market(in BTC), at which you would like to calculate the buy_rate
+
+Market_sell_depth = The depth of the market(in BTC), at which you would like to calculate the sell_rate
+
+coin_MxConf = The max confirmation the worker/api will accept before allowing the confirmation of the transaction.  
+
+exchange_id = the id of the market exchange we wish to use for any given coin's default rate. To see these exact prewritten IDs, look in ./control/cron/rates/exchange.php
+
+exchange_spec = a unique identifier for the coin market (used in conjunction with crypsy's API, could be used for others, when a market has an identifier per coin), to establish current rates/orders on the market.
+
+coin_fee = default percentage of a fee for this coin, used for customizing coin pricing
+
+coin_txfee = default coin amount for txfee
+
+coin_enabled = disable a coin
+
+min/max = allows limitations for the amount of withdraw
 
 
-<h3>Hot Wallet Instructions</h3>
-<ol><li>You need to ensure account signups by anon users is enabled (site-> configuration), login as admin </li>
 
-<li>Register a new account, (use a lengthy user, pass), write it down, http://10.0.1.10/site/user/register </li>
+Hot Wallet Instructions
+========================
 
-<li>Verify account, by email </li>
+1) you need to ensure account signups by anon users is enabled (site-> configuration), login as admin
 
-<li>Create a password, set basic user settings.  Leave email as 2fa option </li>
+2) register a new account, (use a lengthy user, pass), write it down, http://10.0.1.10/site/user/register
 
-<li>Enable all coins, http://10.0.1.10/site/Coin , go coin by coin and hit "manage" a popup comes up, hit "enabled". </li>
+3) verify account, by email
 
-<li>Visit Account Dashboard http://10.0.1.10/site/Account copy your new user's API key </li>
+4) Create a password, set basic user settings.  Leave email as 2fa option
 
-<li>Place your apikey in here, instead of the current API key http://10.0.1.11/api/api.php?apikey=404df6fe955060d799b0782d879c783c5909e3f1&action=getnewaddress&coin=BTC  Change the coin for any coin you wish to deposit e.g. BTC, LTC, POT, etc </li>
+5) Enable all coins, http://10.0.1.10/site/Coin , go coin by coin and hit "manage" a popup comes up, hit "enabled".
 
-<li>
-```
-./bitcoind sendfrom youraccount depositwalletaddress 
-```
-</li>
-<li>
-```
-a) ssh/browse into your API server
-b) cd /var/www/api/config
-c) nano ccapiconfig.php
+6) visit Account Dashboard http://10.0.1.10/site/Account copy your new user's API key
 
-change:  $adminid = '1';
-```
-The number should be the drupal user id you just created. See below for how to find that id.
-</li>
+7) Place your apikey in here, instead of the current API key http://10.0.1.11/api/api.php?apikey=404df6fe955060d799b0782d879c783c5909e3f1&action=getnewaddress&coin=BTC  Change the coin for any coin you wish to deposit e.g. BTC, LTC, POT, etc
 
-<li>go to phpymyadmin http://10.0.1.12/phpmyadmin, login as root, and browse site database.</li>
+8)  ./bitcoind youraccount depositwalletaddress
 
-<li>look for and go to, 'users' table.  Look for the name and ID for the drupal user you just created, refer back to Step 9c.  change the $adminid to the drupal userid and save.</li>
+9) a) ssh into API server. api@10.0.1.11
+   b) cd /var/www/api/config
+	c) nano ccapiconfig.php
+
+	change:  $adminid = '1';
+
+	The number should be the drupal user id you just created.  How do you know which userid is for who?
+10) go to phpymyadmin http://10.0.1.12/phpmyadmin, login as root, and browse site database.
+
+11) look for and go to, 'users' table.  Look for the name and ID for the drupal user you just created, refer back to Step 9c.  change the $adminid to the drupal userid and save.
 
 
 Add Scheduled cron tasks:
@@ -67,9 +92,8 @@ Add Scheduled cron tasks:
 ```
 sudo crontab -e
 ```
-
-copy and paste the following:
 ```
+copy and paste the following:
 */15 * * * * echo "Running cron" 2>&1 >> /var/log/daemons/cron.log
 15,45 * * * * cd /var/www/api/ && php -f ./control/cron/rates/getrate.php 2>&1 >> /var/log/daemons/cron.log
 */11 * * * * cd /var/www/api/ && php -f ./control/cron/api_cron.php pending_withdraw 2>&1 >> /var/log/daemons/cron.log
