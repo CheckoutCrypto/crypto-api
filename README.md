@@ -4,11 +4,60 @@ CheckoutCrypto API
 The source code for the public + private API allows the site, merchants, developers, to connect to the worker backend.  This is the middleman between the backend management(worker), and the public(site, developers, etc).
  
 
-Prerequisites
-=============
+###Dependencies
 You must have the CheckoutCrypto drupal site database installed. Which means you must install drupal with these modules: https://github.com/CheckoutCrypto/site enabled and installed.
 
 required:  ccAccount, ccAdmin, ccBalance ccCoins, ccGroups, ccOTP, ccService, ccWallets, ccTransactions, ccWorker, cgTrading,
+
+All the above are preinstalled in the CheckoutCrypto site docker image
+
+specific api requirements:
+apache, php5, php5-mysql, php5-curl, curl, git 
+
+## Docker
+### Required Containers
+Run MySQL daemon container with mysql-server (exposed port 3306)
+
+```
+docker run --name mysql -e MYSQL_ROOT_PASSWORD=somepass -d mysql
+```
+
+Run PHPMyAdmin daemon container with mysql connection(exposed port 80 mapped to 81)
+
+```
+docker run -d --link mysql:mysql -e MYSL_USERNAME=root --name phpmyadmin -p 81:80 corbinu/docker-phpmyadmin
+```
+
+###API Usage Server
+
+```
+ docker run -d -it -p 83:80 --name api --link mysql:mysql checkoutcrypto/crypto-api
+```
+
+###API Single usage
+
+```
+ docker run -it -p 83:80 --name api --link mysql:mysql checkoutcrypto/crypto-api
+```
+
+###API Container Access
+
+```
+ docker exec -it api /bin/bash
+```
+
+###Post-installation
+
+API is preset to boot with environment variables supplied by the mysql container above. You must link a mysql container such as the one above, with accompanying variables in order to set the database correctly.
+
+The last api setup steps are below. First you need a worker api key, supplied by a worker [qt](https://registry.hub.docker.com/u/checkoutcrypto/worker) [ dart](https://registry.hub.docker.com/u/checkoutcrypto/worker-dart)
+
+- [CheckoutCrypto Drupal Site and Database](https://registry.hub.docker.com/u/checkoutcrypto/site/) Installed and configured separately.
+- [CheckoutCrypto Worker](https://registry.hub.docker.com/u/checkoutcrypto/worker)
+- [Bitcoin daemon](https://bitcoin.org/en/download)
+
+[Read the repository for more API information](https://github.com/CheckoutCrypto/crypto-api/) 
+[For specific api calls](https://github.com/CheckoutCrypto/crypto-api/blob/master/API_CALLS.md)
 
 
 API
@@ -59,7 +108,7 @@ min/max = allows limitations for the amount of withdraw
 Hot Wallet Instructions
 ========================
 
-1) you need to ensure account signups by anon users is enabled (site-> configuration), login as admin
+1) you need to ensure account signups by anon users is enabled (site-> configuration), login to site as admin
 
 2) register a new account, (use a lengthy user, pass), write it down, http://10.0.1.10/site/user/register
 
